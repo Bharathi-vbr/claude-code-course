@@ -19,16 +19,26 @@ jobs:
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
-      issues: read
+      contents: write
+      pull-requests: write
+      issues: write
       id-token: write
-      actions: read # Required for Claude to read CI results on PRs
+      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Project Setup
+        run: |
+          cd uigen
+          npm run setup
 
       - name: Run Claude Code
         id: claude
@@ -36,15 +46,31 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
-          # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
             actions: read
 
-          # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
-          # prompt: 'Update the pull request description to include a summary of changes.'
+          custom_instructions: |
+            This is a uigen app — a two-panel React component generator workspace.
+            The project lives in the /uigen directory.
+            The dev server runs at localhost:3000 (already started).
+            Logs are written to /tmp/uigen-dev.log.
+            Use `sqlite3 uigen/prisma/dev.db` to query the database if needed.
+            Generated components go in uigen/src/generated/.
+            The AI generation system prompt is at uigen/src/lib/prompts/generation.tsx.
+            Use mcp__playwright tools to open the browser and interact with the app UI.
 
-          # Optional: Add claude_args to customize behavior and configuration
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-          # claude_args: '--allowed-tools Bash(gh pr:*)'
+          mcp_config: |
+            {
+              "mcpServers": {
+                "playwright": {
+                  "command": "npx",
+                  "args": [
+                    "@playwright/mcp@latest",
+                    "--allowed-origins",
+                    "localhost:3000;cdn.tailwindcss.com;esm.sh"
+                  ]
+                }
+              }
+            }
 
+          allowed_tools: "Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(sqlite3:*),Bash(cat:*),Bash(ls:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*),Bash(git:*),Bash(gh:*),mcp__playwright__browser_navigate,mcp__playwright__browser_screenshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_wait_for,mcp__playwright__browser_scroll,mcp__playwright__browser_hover,mcp__playwright__browser_select_option"
