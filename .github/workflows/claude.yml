@@ -49,28 +49,15 @@ jobs:
           additional_permissions: |
             actions: read
 
-          custom_instructions: |
-            This is a uigen app — a two-panel React component generator workspace.
-            The project lives in the /uigen directory.
-            The dev server runs at localhost:3000 (already started).
-            Logs are written to /tmp/uigen-dev.log.
-            Use `sqlite3 uigen/prisma/dev.db` to query the database if needed.
-            Generated components go in uigen/src/generated/.
-            The AI generation system prompt is at uigen/src/lib/prompts/generation.tsx.
-            Use mcp__playwright tools to open the browser and interact with the app UI.
-
-          mcp_config: |
+          settings: |
             {
+              "customInstructions": "This is a uigen app — a React component generator. The project lives in the /uigen directory. Generated components go in uigen/src/generated/. The AI generation system prompt is at uigen/src/lib/prompts/generation.tsx.",
               "mcpServers": {
                 "playwright": {
                   "command": "npx",
-                  "args": [
-                    "@playwright/mcp@latest",
-                    "--allowed-origins",
-                    "localhost:3000;cdn.tailwindcss.com;esm.sh"
-                  ]
+                  "args": ["@playwright/mcp@latest", "--allowed-origins", "localhost:3000;cdn.tailwindcss.com;esm.sh"]
                 }
               }
             }
 
-          allowed_tools: "Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(sqlite3:*),Bash(cat:*),Bash(ls:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*),Bash(git:*),Bash(gh:*),mcp__playwright__browser_navigate,mcp__playwright__browser_screenshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_wait_for,mcp__playwright__browser_scroll,mcp__playwright__browser_hover,mcp__playwright__browser_select_option"
+          claude_args: '--allowedTools "Bash(npm:*),Bash(npx:*),Bash(node:*),Bash(sqlite3:*),Bash(git:*),Bash(gh:*),mcp__playwright__browser_navigate,mcp__playwright__browser_screenshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot"'
